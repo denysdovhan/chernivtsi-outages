@@ -23,6 +23,8 @@ function toTimestamp(date) {
 }
 
 async function fetchImage(url) {
+    console.log(`Fetching image from ${url}`);
+
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -30,6 +32,8 @@ async function fetchImage(url) {
 }
 
 async function normalizeImage(buffer) {
+    console.log('Normalizing image for further processing...');
+
     return sharp(buffer)
         .resize(UNIFIED_WIDTH)
         .trim()
@@ -38,6 +42,8 @@ async function normalizeImage(buffer) {
 }
 
 async function extractTableImage({data, info}) {
+    console.log('Extracting table image...');
+
     const header = await sharp(data)
         .extract({
             left: 0,
@@ -51,7 +57,9 @@ async function extractTableImage({data, info}) {
     const isLegendPresent = headerDominantColor.r > 220
         && headerDominantColor.g > 220
         && headerDominantColor.b > 220;
-    const topOffset = isLegendPresent ? LEGEND_HEIGHT + HEADER_HEIGHT : HEADER_HEIGHT
+    const topOffset = isLegendPresent ? LEGEND_HEIGHT + HEADER_HEIGHT : HEADER_HEIGHT;
+
+    console.log(`Legend is ${isLegendPresent ? 'present' : 'absent'}.`);
 
     return sharp(data)
         .extract({
@@ -94,6 +102,8 @@ async function tableImageToData(bufferWithInfo) {
             const {r, g} = await getDominantColor(cell);
             table[rowIndex][cellIndex] = r > g ? 0 : 1;
         }
+
+        console.log(`Group ${rowIndex + 1}: `, table[rowIndex].map(c => c ? '🟩' : '🟥').join(''));
     }
 
     return table;
@@ -102,6 +112,8 @@ async function tableImageToData(bufferWithInfo) {
 async function storeData(json, table, raw, date) {
     const timestamp = toTimestamp(date);
     const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+    console.log('Storing data to disk...')
 
     const diskOperations = ['latest', `history/${timestamp}`].map(
         async dir => {
