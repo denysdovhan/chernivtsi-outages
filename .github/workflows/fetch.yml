@@ -26,11 +26,12 @@ jobs:
       - name: ⬇️ Install dependencies
         run: npm ci
 
-      - name: 📥 Fetch data
+      - name: ⚡️ Fetch data
         run: npm start
 
       - name: 📤 Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'chore(fetch): Scheduled data fetch [skip ci]'
+          file_pattern: 'data/**'
           commit_options: '--no-verify'
