@@ -103,7 +103,7 @@ async function storeData(json, table, raw, date) {
     const timestamp = toTimestamp(date);
     const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-    const diskOperations = ['latest', timestamp].map(
+    const diskOperations = ['latest', `history/${timestamp}`].map(
         async dir => {
             const dest = path.join(dirname, '/data', dir);
             await fs.mkdir(dest, { recursive: true });
