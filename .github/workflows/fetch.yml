@@ -1,7 +1,7 @@
 name: fetch
 on:
   schedule:
-    - cron: '30 * * * *' # Every hour on 30th minute
+    - cron: '30 */3 * * *' # At minute 30 past every 3rd hour.
   workflow_dispatch:
 
 concurrency:
