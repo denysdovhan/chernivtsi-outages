@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import { utcToZonedTime, format } from 'date-fns-tz/esm';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promises as fs } from 'node:fs';
@@ -16,10 +17,11 @@ const ROWS = 18; // 18 groups
 
 const URL = 'http://oblenergo.cv.ua/shutdowns/GPV.png'
 
+const TZ = 'Europe/Kiev';
+
 function toTimestamp(date) {
     // Convert date to a local timezone
-    const timezone = (new Date(date)).toLocaleString('en-US', {timeZone: 'Europe/Kiev'});
-    return (new Date(timezone)).toISOString().split('T')[0]
+    return format(utcToZonedTime(date, TZ), 'yyyy-MM-dd', { timeZone: TZ });
 }
 
 async function fetchImage(url) {
@@ -109,19 +111,23 @@ async function tableImageToData(bufferWithInfo) {
     return table;
 }
 
-async function storeData(json, table, raw, date) {
+async function storeData(data, table, raw, date) {
     const timestamp = toTimestamp(date);
     const dirname = path.dirname(fileURLToPath(import.meta.url));
+    const json = JSON.stringify({
+        date: timestamp,
+        data
+    });
 
-    console.log('Storing data to disk...')
+    console.log(`Storing data to disk for ${timestamp}`);
 
     const diskOperations = ['latest', `history/${timestamp}`].map(
         async dir => {
             const dest = path.join(dirname, '/data', dir);
             await fs.mkdir(dest, { recursive: true });
             await fs.writeFile(path.join(dest, `data.json`), json);
-            await fs.writeFile(path.join(dest, 'table.png'), table)
-            await fs.writeFile(path.join(dest, 'raw.png'), raw)
+            await fs.writeFile(path.join(dest, 'table.png'), table);
+            await fs.writeFile(path.join(dest, 'raw.png'), raw);
         }
     )
 
@@ -133,9 +139,5 @@ export async function extractOutages(imagePath, {date = Date.now() }) {
     const unifiedImage = await normalizeImage(image);
     const tableImage = await extractTableImage(unifiedImage);
     const data = await tableImageToData(tableImage);
-    const json = JSON.stringify({
-        date: toTimestamp(date),
-        data
-    });
-    await storeData(json, tableImage.data, unifiedImage.data, date);
+    await storeData(data, tableImage.data, unifiedImage.data, date);
 }
