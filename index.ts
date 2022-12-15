@@ -1,8 +1,14 @@
-import sharp from 'sharp';
-import { utcToZonedTime, format } from 'date-fns-tz/esm';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import sharp, { Stats, OutputInfo } from 'sharp';
+import { utcToZonedTime, format } from 'date-fns-tz';
 import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+type BufferWithInfo = {
+    data: Buffer;
+    info: OutputInfo;
+}
+type Connectivity = 1 | 0;
+type DataTable = Connectivity[][];
 
 const UNIFIED_WIDTH = 900;
 
@@ -19,12 +25,12 @@ const URL = 'http://oblenergo.cv.ua/shutdowns/GPV.png'
 
 const TZ = 'Europe/Kiev';
 
-function toTimestamp(date) {
+function toTimestamp(date: Date | string): string {
     // Convert date to a local timezone
     return format(utcToZonedTime(date, TZ), 'yyyy-MM-dd', { timeZone: TZ });
 }
 
-async function fetchImage(url) {
+async function fetchImage(url: string): Promise<Buffer> {
     console.log(`Fetching image from ${url}`);
 
     const response = await fetch(url);
@@ -33,7 +39,7 @@ async function fetchImage(url) {
     return buffer;
 }
 
-async function normalizeImage(buffer) {
+async function normalizeImage(buffer: string | Buffer): Promise<BufferWithInfo> {
     console.log('Normalizing image for further processing...');
 
     return sharp(buffer)
@@ -43,7 +49,7 @@ async function normalizeImage(buffer) {
         .toBuffer({resolveWithObject: true});
 }
 
-async function extractTableImage({data, info}) {
+async function extractTableImage({data, info}: BufferWithInfo): Promise<BufferWithInfo> {
     console.log('Extracting table image...');
 
     const header = await sharp(data)
@@ -73,7 +79,11 @@ async function extractTableImage({data, info}) {
         .toBuffer({ resolveWithObject: true});
 }
 
-async function extractCellImage({data, info}, rowIndex, cellIndex) {
+async function extractCellImage(
+    {data, info}: BufferWithInfo,
+    rowIndex: number,
+    cellIndex: number
+): Promise<Buffer> {
     const cellWidth = info.width / COLUMNS;
     const cellHeight = info.height / ROWS;
 
@@ -87,14 +97,14 @@ async function extractCellImage({data, info}, rowIndex, cellIndex) {
         .toBuffer()
 }
 
-async function getDominantColor(buffer) {
+async function getDominantColor(buffer: Buffer): Promise<Stats['dominant']> {
     return sharp(buffer)
         .stats()
         .then(({dominant}) => dominant)
 }
 
-async function tableImageToData(bufferWithInfo) {
-    const table = [];
+async function tableImageToData(bufferWithInfo: BufferWithInfo): Promise<DataTable> {
+    const table: DataTable = [];
 
     for (let rowIndex = 0; rowIndex < ROWS; rowIndex++) {
         table[rowIndex] = [];
@@ -111,9 +121,8 @@ async function tableImageToData(bufferWithInfo) {
     return table;
 }
 
-async function storeData(data, table, raw, date) {
+async function storeData(data: DataTable, table: Buffer, raw: Buffer, date: Date | string) {
     const timestamp = toTimestamp(date);
-    const dirname = path.dirname(fileURLToPath(import.meta.url));
     const json = JSON.stringify({
         date: timestamp,
         data
@@ -123,7 +132,7 @@ async function storeData(data, table, raw, date) {
 
     const diskOperations = ['latest', `history/${timestamp}`].map(
         async dir => {
-            const dest = path.join(dirname, '/data', dir);
+            const dest = path.join(__dirname, '/outages', dir);
             await fs.mkdir(dest, { recursive: true });
             await fs.writeFile(path.join(dest, `data.json`), json);
             await fs.writeFile(path.join(dest, 'table.png'), table);
@@ -134,7 +143,11 @@ async function storeData(data, table, raw, date) {
     return Promise.all(diskOperations);
 }
 
-export async function extractOutages(imagePath, {date = Date.now() }) {
+export type ExtractOutagesOptions = {
+    date?: Date | string;
+}
+
+export async function extractOutages(imagePath: string, {date = new Date() }: ExtractOutagesOptions) {
     const image = imagePath ?? await fetchImage(URL);
     const unifiedImage = await normalizeImage(image);
     const tableImage = await extractTableImage(unifiedImage);
