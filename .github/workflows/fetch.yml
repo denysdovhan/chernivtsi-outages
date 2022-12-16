@@ -33,5 +33,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'chore(fetch): Scheduled data fetch [skip ci]'
-          file_pattern: 'data/**'
+          file_pattern: 'outages/**'
           commit_options: '--no-verify'
