@@ -67,8 +67,7 @@ async function fetchData(): Promise<OutagesData> {
   return { date, table };
 }
 
-export function dataToReadme({ table, date }: OutagesData) {
-  const timestamp = toTimestamp(date);
+export function dataToReadme(table: OutagesTable, timestamp: string) {
   const hours = Array(24)
     .fill(0)
     .map((_, index) => `${index + 1}`);
@@ -89,7 +88,7 @@ export async function storeData({ table, date }: OutagesData) {
   const json = JSON.stringify({ date: timestamp, data: table });
   const filename = fileURLToPath(import.meta.url);
   const dirname = path.dirname(filename);
-  const readme = dataToReadme({ table, date });
+  const readme = dataToReadme(table, timestamp);
 
   const diskOperations = ['latest', `history/${timestamp}`].map(async (dir) => {
     const dest = path.join(dirname, '/outages', dir);
@@ -103,6 +102,6 @@ export async function storeData({ table, date }: OutagesData) {
 
 export async function extractOutages() {
   const data = await fetchData();
-  console.log(dataToReadme(data));
+  console.log(dataToReadme(data.table, toTimestamp(data.date)));
   return storeData(data);
 }
