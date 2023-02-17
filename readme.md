@@ -13,6 +13,18 @@
   - `raw.png` — нормалізоване оригінальне зображення з сайту (_застаріле_)
 - `/outages/latest` – найсвіжіші дані про відключення
 
+Доступ до даних можна отримати за допомогою GitHub URI, наприклад:
+
+```
+https://raw.githubusercontent.com/denysdovhan/chernivtsi-outages/main/outages/latest/data.json
+```
+
+або
+
+```
+https://raw.githubusercontent.com/denysdovhan/chernivtsi-outages/main/outages/history/{yyyy-MM-dd}/data.json
+```
+
 ### Формат даних
 
 Дані зберігаються у форматі JSON у файлі `data.json`. Кожен файл містить об'єкт з такої структури:
@@ -54,6 +66,18 @@ The following data is available for use and research:
     - `table.png` – cropped image of the table from the site (_deprecated_)
     - `raw.png` — normalized original image from the site (_deprecated_)
 - `/outages/latest` – the latest data about outages
+
+You can access the data using GitHub user content URI, like this:
+
+```
+https://raw.githubusercontent.com/denysdovhan/chernivtsi-outages/main/outages/latest/data.json
+```
+
+or
+
+```
+https://raw.githubusercontent.com/denysdovhan/chernivtsi-outages/main/outages/history/{yyyy-MM-dd}/data.json
+```
 
 ### Data format
 
