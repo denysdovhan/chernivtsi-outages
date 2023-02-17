@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "es2016",
-    "module": "commonjs",
-    "esModuleInterop": true,
+    "module": "ESNext",
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "checkJs": true,
     "noEmit": true,
