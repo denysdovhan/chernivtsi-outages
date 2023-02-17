@@ -102,4 +102,4 @@ A script is run every few hours that extracts data from the [Chernivtsioblenergo
 
 ## License
 
-MIT © Denis Dovgan
+MIT © Donys Dovhan
