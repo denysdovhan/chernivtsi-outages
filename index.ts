@@ -67,7 +67,7 @@ async function fetchData(): Promise<OutagesData> {
   return { date, table };
 }
 
-export function dataToReadme(table: OutagesTable, timestamp: string) {
+export function dataToMarkdown(table: OutagesTable, timestamp: string) {
   const hours = Array(24)
     .fill(0)
     .map((_, index) => `${index + 1}`);
@@ -83,17 +83,26 @@ export function dataToReadme(table: OutagesTable, timestamp: string) {
   return `# ${timestamp}\n\n${tableString}`;
 }
 
+export function dataToCSV(table: OutagesTable) {
+  return table
+    .map((row) => row.join(','))
+    .join('\n')
+    .concat('\n');
+}
+
 export async function storeData({ table, date }: OutagesData) {
   const timestamp = toTimestamp(date);
   const json = JSON.stringify({ date: timestamp, data: table });
   const filename = fileURLToPath(import.meta.url);
   const dirname = path.dirname(filename);
-  const readme = dataToReadme(table, timestamp);
+  const readme = dataToMarkdown(table, timestamp);
+  const csv = dataToCSV(table);
 
   const diskOperations = ['latest', `history/${timestamp}`].map(async (dir) => {
     const dest = path.join(dirname, '/outages', dir);
     await fs.mkdir(dest, { recursive: true });
     await fs.writeFile(path.join(dest, `data.json`), json);
+    await fs.writeFile(path.join(dest, `data.csv`), csv);
     await fs.writeFile(path.join(dest, `readme.md`), readme);
   });
 
@@ -102,6 +111,6 @@ export async function storeData({ table, date }: OutagesData) {
 
 export async function extractOutages() {
   const data = await fetchData();
-  console.log(dataToReadme(data.table, toTimestamp(data.date)));
+  console.log(dataToMarkdown(data.table, toTimestamp(data.date)));
   return storeData(data);
 }

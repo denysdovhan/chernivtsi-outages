@@ -7,7 +7,8 @@
 Для використання та дослідження доступні такі дані:
 
 - `/outages/history/yyyy-MM-dd`
-  - `data.json` – дані відключень
+  - `data.json` – дані відключень у форматі JSON
+  - `data.csv` – дані відключень у форматі CSV
   - `readme.md` — опис даних
   - `table.png` – обрізане зображення таблиці з сайту (_застаріле_)
   - `raw.png` — нормалізоване оригінальне зображення з сайту (_застаріле_)
@@ -61,7 +62,8 @@ This repository contains data about electricity outages in Chernivtsi.
 The following data is available for use and research:
 
 - `/outages/history/yyyy-MM-dd`
-  - `data.json` – data about outages
+  - `data.json` – data about outages in JSON format
+  - `data.cvs` – data about outages in CSV format
   - `readme.md` — data description
     - `table.png` – cropped image of the table from the site (_deprecated_)
     - `raw.png` — normalized original image from the site (_deprecated_)
