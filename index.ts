@@ -57,7 +57,7 @@ function toTimestamp(date: Date): string {
 async function fetchData(): Promise<OutagesData> {
   const dom = await JSDOM.fromURL(URL);
   const groupRowsEl = dom.window.document.querySelectorAll('#gsv div[id^=inf]');
-  const dateEl = dom.window.document.querySelector('#gsv_t b');
+  const dateEl = dom.window.document.querySelector('#gsv ul p');
   const date = parse(dateEl?.textContent?.trim()!, 'dd.MM.yyyy', Date.now());
 
   const table = Array.from(groupRowsEl, (row) =>
